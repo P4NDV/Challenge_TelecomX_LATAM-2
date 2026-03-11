@@ -1,243 +1,160 @@
-# 📊 Análisis de Churn — TelecomX LATAM
+# Telecom X LATAM 2
 
-Análisis exploratorio de datos sobre la evasión de clientes de Telecom X, utilizando Python, Pandas, Matplotlib y Seaborn.
+## Archivos
 
----
-
-## 📌 Extracción
-
-Los datos se cargan directamente desde la API pública en formato JSON y se convierten a un DataFrame plano de Pandas mediante `pd.json_normalize`.
-
-```python
-DATA_URL = "https://raw.githubusercontent.com/ingridcristh/challenge2-data-science-LATAM/main/TelecomX_Data.json"
-```
-
-Dataset inicial: **7 267 filas × 21 columnas**.
-
----
-
-## 🔧 Transformación
-
-### Conoce el conjunto de datos
-
-| Columna | Tipo | Descripción |
-|---|---|---|
-| customerID | object | Identificador único del cliente |
-| Churn | object | Indica si el cliente canceló el servicio |
-| customer_gender | object | Género del cliente |
-| customer_SeniorCitizen | int64 | Cliente con 65 años o más |
-| customer_Partner | object | Cliente con pareja |
-| customer_Dependents | object | Cliente con dependientes |
-| customer_tenure | int64 | Meses de permanencia |
-| phone_PhoneService | object | Suscripción al servicio telefónico |
-| phone_MultipleLines | object | Múltiples líneas telefónicas |
-| internet_InternetService | object | Tipo de servicio de internet |
-| internet_OnlineSecurity | object | Servicio de seguridad en línea |
-| internet_OnlineBackup | object | Respaldo en línea |
-| internet_DeviceProtection | object | Protección del dispositivo |
-| internet_TechSupport | object | Soporte técnico |
-| internet_StreamingTV | object | Streaming de TV |
-| internet_StreamingMovies | object | Streaming de películas |
-| account_Contract | object | Tipo de contrato |
-| account_PaperlessBilling | object | Facturación sin papel |
-| account_PaymentMethod | object | Método de pago |
-| account_Charges_Monthly | float64 | Cargo mensual |
-| account_Charges_Total | object | Cargo total acumulado |
-
----
-
-### Comprobación de incoherencias en los datos
-
-| Columna | Valores faltantes |
+| Recurso | Contenido |
 |---|---|
-| Churn | 224 |
-| account_Charges_Total | 11 |
+| `TelecomX_LATAM.ipynb` | Parte 1 · limpieza y analisis exploratorio |
+| `TelecomX_PARTE2_Modelado.ipynb` | Parte 2 · modelado predictivo de churn |
+| `data/telecomx_parte1_limpio.csv` | dataset tratado usado en ambas partes |
+| `images/` | graficas exportadas para el analisis |
 
-- **Duplicados totales:** 0
-- **Categorías revisadas:** `Churn`, `phone_PhoneService`, `phone_MultipleLines`, `internet_InternetService`, `account_Contract`, `account_PaymentMethod`
+## Resumen del dataset
 
----
+| Estado | Filas | Columnas |
+|---|---:|---:|
+| Dataset original | 7267 | 21 |
+| Dataset tratado | 7043 | 21 |
 
-### Manejo de inconsistencias
+| Calidad del dato | Valor |
+|---|---:|
+| Registros con `Churn` ausente eliminados | 224 |
+| Valores faltantes en `account_Charges_Total` completados con `0` | 11 |
+| Duplicados totales | 0 |
 
-- Se eliminaron los 224 registros con `Churn` ausente.
-- Los 11 valores faltantes de `account_Charges_Total` correspondían a clientes con `customer_tenure == 0` → se completaron con `0`.
+## Distribucion de churn
 
-**Dataset limpio: 7 043 filas × 21 columnas.**
+| Clase | Cantidad | Porcentaje |
+|---|---:|---:|
+| No churn | 5174 | 73.46 |
+| Churn | 1869 | 26.54 |
 
----
+![Distribucion de churn](images/01_distribucion_churn.png)
 
-### Columna de cuentas diarias (Opcional)
+## Variables numericas
 
-Se creó la columna `Cuentas_Diarias = account_Charges_Monthly / 30`.
+| Variable | count | mean | std | min | 25% | 50% | 75% | max |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| customer_tenure | 7043 | 32.37 | 24.56 | 0.00 | 9.00 | 29.00 | 55.00 | 72.00 |
+| account_Charges_Monthly | 7043 | 64.76 | 30.09 | 18.25 | 35.50 | 70.35 | 89.85 | 118.75 |
+| account_Charges_Total | 7043 | 2279.73 | 2266.79 | 0.00 | 398.55 | 1394.55 | 3786.60 | 8684.80 |
+| Cuentas_Diarias | 7043 | 2.16 | 1.00 | 0.61 | 1.18 | 2.34 | 2.99 | 3.96 |
 
-| account_Charges_Monthly | Cuentas_Diarias |
-|---|---|
-| 29.85 | 1.00 |
-| 56.95 | 1.90 |
-| 53.85 | 1.80 |
+![Distribucion numerica](images/03_distribucion_numericas.png)
 
----
+## Churn por variables categoricas
 
-### Estandarización y transformación de datos (Opcional)
-
-Se crearon columnas binarias (Yes → 1, No → 0) para: `Churn`, `customer_Partner`, `customer_Dependents`, `account_PaperlessBilling`.
-
-| Variable | Antes | Después (_binario) |
-|---|---|---|
-| Churn | Yes / No | 1 / 0 |
-| customer_Partner | Yes / No | 1 / 0 |
-| customer_Dependents | Yes / No | 1 / 0 |
-| account_PaperlessBilling | Yes / No | 1 / 0 |
-
----
-
-## 📊 Carga y análisis
-
-### Análisis Descriptivo
-
-| Variable | count | mean | std | min | 25% | 50% | 75% | max | mediana | varianza |
-|---|---|---|---|---|---|---|---|---|---|---|
-| customer_tenure | 7043 | 32.37 | 24.56 | 0.00 | 9.00 | 29.00 | 55.00 | 72.00 | 29.00 | 603.17 |
-| account_Charges_Monthly | 7043 | 64.76 | 30.09 | 18.25 | 35.50 | 70.35 | 89.85 | 118.75 | 70.35 | 905.41 |
-| account_Charges_Total | 7043 | 2279.73 | 2266.79 | 0.00 | 398.55 | 1394.55 | 3786.60 | 8684.80 | 1394.55 | 5 138 357.00 |
-| Cuentas_Diarias | 7043 | 2.16 | 1.00 | 0.61 | 1.18 | 2.34 | 2.99 | 3.96 | 2.34 | 1.01 |
-
----
-
-### Distribución de evasión
-
-| Churn | Porcentaje |
-|---|---|
-| No | 73.46% |
-| Yes | 26.54% |
-
-![Distribución de evasión](images/01_distribucion_churn.png)
-
----
-
-### Recuento de evasión por variables categóricas
-
-**Por género:**
-
-| Género | No (%) | Yes (%) |
-|---|---|---|
-| Female | 73.08 | 26.92 |
-| Male | 73.84 | 26.16 |
-
-**Por tipo de contrato:**
-
-| Contrato | No (%) | Yes (%) |
-|---|---|---|
-| Month-to-month | 57.29 | **42.71** |
+| Contrato | No (%) | Churn (%) |
+|---|---:|---:|
+| Month-to-month | 57.29 | 42.71 |
 | One year | 88.73 | 11.27 |
 | Two year | 97.17 | 2.83 |
 
-**Por método de pago:**
-
-| Método de pago | No (%) | Yes (%) |
-|---|---|---|
+| Metodo de pago | No (%) | Churn (%) |
+|---|---:|---:|
 | Bank transfer (automatic) | 83.29 | 16.71 |
 | Credit card (automatic) | 84.76 | 15.24 |
-| Electronic check | 54.71 | **45.29** |
+| Electronic check | 54.71 | 45.29 |
 | Mailed check | 80.89 | 19.11 |
 
-**Por servicio de internet:**
-
-| Servicio de internet | No (%) | Yes (%) |
-|---|---|---|
+| Servicio de internet | No (%) | Churn (%) |
+|---|---:|---:|
 | DSL | 81.04 | 18.96 |
-| Fiber optic | 58.11 | **41.89** |
+| Fiber optic | 58.11 | 41.89 |
 | No | 92.60 | 7.40 |
 
-![Churn por variables categóricas](images/02_churn_categoricas.png)
+![Churn por variables categoricas](images/02_churn_categoricas.png)
 
----
+## Correlacion
 
-### Conteo de evasión por variables numéricas
+| Variable | Correlacion con churn |
+|---|---:|
+| customer_tenure | -0.35 |
+| account_Charges_Monthly | 0.19 |
+| account_Charges_Total | -0.20 |
+| Total_Servicios | -0.02 |
 
-| Variable | Media (No) | Mediana (No) | Media (Yes) | Mediana (Yes) |
-|---|---|---|---|---|
-| customer_tenure | 37.57 | 38.00 | 17.98 | 10.00 |
-| account_Charges_Monthly | 61.27 | 64.43 | 74.44 | 79.65 |
-| account_Charges_Total | 2549.91 | 1679.52 | 1531.80 | 703.55 |
-| Cuentas_Diarias | 2.04 | 2.15 | 2.48 | 2.66 |
+![Correlacion](images/04_correlacion.png)
 
-![Distribución de variables numéricas por churn](images/03_distribucion_numericas.png)
+## Parte 2 · Modelado predictivo
 
----
-
-### Análisis de correlación entre variables (Opcional)
-
-| | customer_tenure | account_Charges_Monthly | account_Charges_Total | Cuentas_Diarias | Total_Servicios | Churn_binario |
-|---|---|---|---|---|---|---|
-| customer_tenure | 1.00 | -0.25 | 0.83 | -0.25 | 0.01 | -0.35 |
-| account_Charges_Monthly | -0.25 | 1.00 | 0.65 | 1.00 | 0.53 | 0.19 |
-| account_Charges_Total | 0.83 | 0.65 | 1.00 | 0.65 | 0.26 | -0.20 |
-| Cuentas_Diarias | -0.25 | 1.00 | 0.65 | 1.00 | 0.53 | 0.19 |
-| Total_Servicios | 0.01 | 0.53 | 0.26 | 0.53 | 1.00 | -0.02 |
-| Churn_binario | -0.35 | 0.19 | -0.20 | 0.19 | -0.02 | 1.00 |
-
-![Heatmap de correlación](images/04_correlacion.png)
-
----
-
-## 📄 Informe final
-
-### Tasa general de churn
-
-| Churn | Porcentaje |
+| Preparacion | Estado |
 |---|---|
-| No | 73.46% |
-| Yes | 26.54% |
+| Columna eliminada | `customerID` |
+| Encoding | `OneHotEncoder` |
+| Escalado para modelo lineal | `StandardScaler` |
+| Balanceo adicional | no aplicado |
+| Split train/test | 70 / 30 |
 
-### Churn por tipo de contrato
+| Modelo | Usa escalado | Accuracy train | Accuracy test | Precision test | Recall test | F1 test | ROC-AUC test | Gap accuracy |
+|---|---|---:|---:|---:|---:|---:|---:|---:|
+| LogisticRegression | Si | 0.8097 | 0.7974 | 0.6383 | 0.5472 | 0.5893 | 0.8404 | 0.0123 |
+| RandomForest | No | 0.9327 | 0.7866 | 0.6239 | 0.4938 | 0.5512 | 0.8311 | 0.1461 |
 
-| Contrato | No (%) | Yes (%) |
-|---|---|---|
-| Month-to-month | 57.29 | **42.71** |
-| One year | 88.73 | 11.27 |
-| Two year | 97.17 | 2.83 |
+| Lectura de ajuste | Resultado |
+|---|---|
+| LogisticRegression | ajuste razonable |
+| RandomForest | posible overfitting |
 
-### Churn por método de pago
+## Mejor modelo
 
-| Método de pago | No (%) | Yes (%) |
-|---|---|---|
-| Bank transfer (automatic) | 83.29 | 16.71 |
-| Credit card (automatic) | 84.76 | 15.24 |
-| Electronic check | 54.71 | **45.29** |
-| Mailed check | 80.89 | 19.11 |
+| Modelo ganador | Accuracy | Precision | Recall | F1 | ROC-AUC |
+|---|---:|---:|---:|---:|---:|
+| LogisticRegression | 0.7974 | 0.6383 | 0.5472 | 0.5893 | 0.8404 |
 
-### Promedios de variables clave por churn
+| Matriz de confusion · LogisticRegression | Predicho No | Predicho Churn |
+|---|---:|---:|
+| Real No | 1378 | 174 |
+| Real Churn | 254 | 307 |
 
-| Churn | customer_tenure | account_Charges_Monthly | account_Charges_Total | Cuentas_Diarias | Total_Servicios |
-|---|---|---|---|---|---|
-| No | 37.57 | 61.27 | 2549.91 | 2.04 | 3.04 |
-| Yes | 17.98 | 74.44 | 1531.80 | 2.48 | 2.68 |
+| Matriz de confusion · RandomForest | Predicho No | Predicho Churn |
+|---|---:|---:|
+| Real No | 1385 | 167 |
+| Real Churn | 284 | 277 |
 
----
+## Variables mas influyentes
 
-### Conclusiones del análisis
+| LogisticRegression | Importancia |
+|---|---:|
+| num__customer_tenure | 1.472860 |
+| num__account_Charges_Total | 0.723144 |
+| cat__account_Contract_Two year | 0.719663 |
+| cat__account_Contract_Month-to-month | 0.583022 |
+| cat__internet_InternetService_DSL | 0.363712 |
+| cat__account_PaperlessBilling_No | 0.354400 |
+| cat__phone_PhoneService_Yes | 0.341093 |
+| cat__internet_TechSupport_Yes | 0.302755 |
+| cat__phone_MultipleLines_No | 0.284102 |
+| cat__customer_Dependents_Yes | 0.249339 |
 
-#### Introducción
-El objetivo de este análisis fue estudiar la evasión de clientes de Telecom X, identificando patrones asociados a la variable Churn y generando información útil para orientar acciones de retención.
+| RandomForest | Importancia |
+|---|---:|
+| num__customer_tenure | 0.147588 |
+| num__account_Charges_Total | 0.139297 |
+| num__account_Charges_Monthly | 0.110610 |
+| cat__account_Contract_Month-to-month | 0.077583 |
+| cat__internet_TechSupport_No | 0.039331 |
+| cat__account_PaymentMethod_Electronic check | 0.036358 |
+| cat__internet_OnlineSecurity_No | 0.034630 |
+| cat__internet_InternetService_Fiber optic | 0.032912 |
+| cat__account_Contract_Two year | 0.023141 |
+| cat__internet_OnlineBackup_No | 0.018557 |
 
-#### Limpieza y tratamiento de datos
-Los datos se cargaron desde la fuente JSON oficial y se transformaron a un DataFrame plano de Pandas. Se detectaron 224 registros con churn ausente y 11 valores faltantes en `account_Charges_Total`. Los registros sin churn se excluyeron y los cargos totales faltantes en clientes nuevos (tenure = 0) se completaron con 0. También se creó la variable `Cuentas_Diarias` y columnas binarias para facilitar el análisis.
+## Hallazgos clave
 
-#### Análisis exploratorio de datos
-El churn general fue de **26.54%**. La evasión se concentra en:
-- Contratos **Month-to-month**: 42.71% de churn
-- Pago con **Electronic check**: 45.29% de churn
-- Internet **Fiber optic**: 41.89% de churn
+| Hallazgo | Valor |
+|---|---|
+| Mayor riesgo de churn | contratos `Month-to-month` |
+| Mayor riesgo por pago | `Electronic check` |
+| Mayor riesgo por servicio | `Fiber optic` |
+| Variable numerica mas asociada | menor `customer_tenure` |
+| Modelo con mejor desempeno | `LogisticRegression` |
 
-Los clientes que cancelan tienen en promedio menor permanencia (**17.98 meses** vs 37.57) y mayor cargo mensual (**$74.44** vs $61.27).
+## Graficas disponibles
 
-#### Conclusiones e insights
-La permanencia es el factor más importante para explicar la evasión. También destacan como señales de alerta los contratos mensuales, el pago con Electronic check y el servicio Fiber optic. Los clientes que cancelan pagan más por mes pero acumulan menor gasto total, consistente con una salida temprana.
-
-#### Recomendaciones
-- Priorizar retención en clientes con contrato **Month-to-month**, especialmente con **Electronic check** o **Fiber optic**.
-- Diseñar ofertas de migración hacia contratos anuales.
-- Revisar la percepción de valor en clientes con cargos mensuales elevados.
-- Establecer campañas de retención durante los **primeros meses** de permanencia.
+| Parte | Grafica |
+|---|---|
+| Parte 1 | `images/01_distribucion_churn.png` |
+| Parte 1 | `images/02_churn_categoricas.png` |
+| Parte 1 | `images/03_distribucion_numericas.png` |
+| Parte 1 | `images/04_correlacion.png` |
