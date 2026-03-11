@@ -148,6 +148,24 @@
 | Mayor riesgo por pago | `Electronic check` |
 | Mayor riesgo por servicio | `Fiber optic` |
 | Variable numerica mas asociada | menor `customer_tenure` |
+
+## Conclusiones estrategicas
+
+| # | Conclusion |
+|---:|---|
+| 1 | La cancelacion se concentra en clientes con menor permanencia y menor cargo total acumulado, lo que apunta a fuga temprana |
+| 2 | La Regresion Logistica se beneficia de la estandarizacion porque optimiza coeficientes sobre variables en distintas escalas |
+| 3 | Random Forest permite contrastar un enfoque no lineal sin dependencia de escala y aporta una segunda lectura de importancia de variables |
+| 4 | Si el recall del churn resulta insuficiente, el siguiente ajuste es mover el umbral de decision o usar pesos de clase antes de remuestreo |
+| 5 | Las acciones de retencion deben priorizar clientes nuevos, contratos flexibles y perfiles con senales de bajo compromiso de permanencia |
+
+| Perfil de mayor riesgo | Descripcion |
+|---|---|
+| Permanencia | Clientes con `customer_tenure` bajo (primeros meses) |
+| Contrato | Contrato `Month-to-month` |
+| Pago | Metodo `Electronic check` |
+| Servicio | `Fiber optic` sin soporte tecnico ni seguridad en linea |
+| Compromiso | Sin servicios adicionales contratados |
 | Modelo con mejor desempeno | `LogisticRegression` |
 
 ## Graficas disponibles
