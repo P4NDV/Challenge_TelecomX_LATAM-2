@@ -187,12 +187,3 @@
 | Servicio | `Fiber optic` sin soporte tecnico ni seguridad en linea |
 | Compromiso | Sin servicios adicionales contratados |
 | Modelo con mejor desempeno | `LogisticRegression` |
-
-## Graficas disponibles
-
-| Parte | Grafica |
-|---|---|
-| Parte 1 | `images/01_distribucion_churn.png` |
-| Parte 1 | `images/02_churn_categoricas.png` |
-| Parte 1 | `images/03_distribucion_numericas.png` |
-| Parte 1 | `images/04_correlacion.png` |
